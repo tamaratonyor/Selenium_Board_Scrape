@@ -9,45 +9,75 @@ from boards.monster import Monster
 from boards.simplyhired import SimplyHired
 import logging
 
-def get_connection(database_user, database_password, database_port, database_name, database_ip):
-    database_connection = sqlalchemy.create_engine('mysql+pymysql://{0}:{1}@{2}:{3}/{4}'.
-                                               format(database_user,database_password, database_ip, database_port, database_name))
+
+def get_connection(
+    database_user, database_password, database_port, database_name, database_ip
+):
+    database_connection = sqlalchemy.create_engine(
+        "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(
+            database_user, database_password, database_ip, database_port, database_name
+        )
+    )
     return database_connection
 
+
 def read_table(database_connection):
-    df = pd.read_sql_table('JobPostings_DataEngineer', database_connection)
+    df = pd.read_sql_table("JobPostings_DataEngineer", database_connection)
     return df
 
+
 def read_config():
-    with open('./config/config.json', 'r') as f:
+    with open("./config/config.json", "r") as f:
         config = json.load(f)
     return config
 
-def scrape(search_parameters):
-    #TODO Use selenium to scrape and change pages. And remove unneccessary libraries. Add a dedup strategy. Then replace the git repo with this more robust version
-    for parameter in search_parameters:
-        ...
 
-def dedup(current):
-    historical = read_table(db_connection)
+def dedup(df_list):
+    deduped_df = pd.concat(df_list, ignore_index=True).drop_duplicates(
+        subset=["Job_Title", "Company", "Location"], keep="first"
+    )
+    return deduped_df
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     config = read_config()
-    db_connection = config['Connection']
-    search_parameters = config['SearchParameters']
-    web_urls = config['URLs']
-    db_connection = get_connection()
+    connection = config["Connection"]
+    search_parameters = config["SearchParameters"]
+    web_urls = config["URLs"]
+    database_connection = get_connection(
+        connection["Username"],
+        connection["Password"],
+        connection["Port"],
+        connection["DbName"],
+        connection["IP"],
+    )
+    df_list = []
     for url in web_urls:
-        if url.contains('monster'):
-            Monster.scrape(search_parameters=search_parameters)
-        elif url.contains('simplyhired'):
-            SimplyHired.scrape(search_parameters=search_parameters)
-        elif url.contains('linkedin'):
-            LinkedIn.scrape(search_parameters=search_parameters)
-        elif url.contains('indeed'):
-            Indeed.scrape(search_parameters=search_parameters)
+        if "indeed" in url:
+            df_list.append(
+                Indeed().scrape(search_parameters=search_parameters, url=url)
+            )
+    '''
+        elif url.contains("simplyhired"):
+            df_list.append(
+                SimplyHired().scrape(search_parameters=search_parameters, url=url)
+            )
+        elif url.contains("linkedin"):
+            df_list.append(
+                LinkedIn().scrape(search_parameters=search_parameters, url=url)
+            )
+        elif url.contains("monster"):
+            df_list.append(
+                Monster().scrape(search_parameters=search_parameters, url=url)
+            )
         else:
-            logging.error("Unsupported Job Board! Please edit the config json accordingly.")
-    
-    
+            logging.error(
+                "Unsupported Job Board! Please edit the config json accordingly."
+            )
+    '''
+    current_df = dedup(df_list)
+    historical_df = read_table(database_connection)
+    deduped_df = dedup([historical_df, current_df])
+    deduped_df.to_sql(
+        con=database_connection, name="JobPostings_DataEngineer", if_exists="replace"
+    )
