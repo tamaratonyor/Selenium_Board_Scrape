@@ -1,7 +1,7 @@
 from selenium import webdriver
 
 class Indeed:
-    def scrape(url):
+    def scrape(search_parameter, url):
         driver = webdriver.Chrome()
         driver.get(url)
         value = driver.find_elements_by_class_name('')
