@@ -62,10 +62,6 @@ if __name__ == "__main__":
                 SimplyHired().scrape(search_parameters=search_parameters, url=url)
             )
     '''
-        elif url.contains("linkedin"):
-            df_list.append(
-                LinkedIn().scrape(search_parameters=search_parameters, url=url)
-            )
         elif url.contains("monster"):
             df_list.append(
                 Monster().scrape(search_parameters=search_parameters, url=url)
