@@ -27,7 +27,7 @@ class SimplyHired:
         locations = []
         for element in id_elements:
             urls.append(
-                "https://www.simplyhired.ca/job/"
+                "https://www.simplyhired.ca"
                 + element.get_attribute("data-mdref")
             )
         for element in title_elements:

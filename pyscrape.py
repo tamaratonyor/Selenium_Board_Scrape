@@ -4,8 +4,6 @@ import re
 from datetime import datetime, timedelta
 import json
 from boards.indeed import Indeed
-from boards.linkedin import LinkedIn
-from boards.monster import Monster
 from boards.simplyhired import SimplyHired
 import logging
 
@@ -61,16 +59,10 @@ if __name__ == "__main__":
             df_list.append(
                 SimplyHired().scrape(search_parameters=search_parameters, url=url)
             )
-    '''
-        elif url.contains("monster"):
-            df_list.append(
-                Monster().scrape(search_parameters=search_parameters, url=url)
-            )
         else:
             logging.error(
                 "Unsupported Job Board! Please edit the config json accordingly."
             )
-    '''
     current_df = dedup(df_list)
     historical_df = read_table(database_connection)
     deduped_df = dedup([historical_df, current_df])
