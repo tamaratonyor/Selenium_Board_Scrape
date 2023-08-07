@@ -12,7 +12,7 @@ class SimplyHired:
             df_list.append(self.create_page_df(driver))
             # TODO Add next page functionality
         df = pd.concat(df_list, ignore_index=True).drop_duplicates(
-            subset=["Job_Title", "Company", "Location"], keep="first"
+            subset=["Job_Title", "Company"], keep="first"
         )
         return df
 
