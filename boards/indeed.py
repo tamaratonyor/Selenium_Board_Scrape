@@ -15,7 +15,6 @@ class Indeed:
         df = pd.concat(df_list, ignore_index=True).drop_duplicates(
             subset=["Job_Title", "Company", "Location"], keep="first"
         )
-        print(df)
         return df
 
     def create_page_df(self, driver):

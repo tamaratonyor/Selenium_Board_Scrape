@@ -57,11 +57,11 @@ if __name__ == "__main__":
             df_list.append(
                 Indeed().scrape(search_parameters=search_parameters, url=url)
             )
-    '''
-        elif url.contains("simplyhired"):
+        elif "simplyhired" in url:
             df_list.append(
                 SimplyHired().scrape(search_parameters=search_parameters, url=url)
             )
+    '''
         elif url.contains("linkedin"):
             df_list.append(
                 LinkedIn().scrape(search_parameters=search_parameters, url=url)
