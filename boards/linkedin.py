@@ -11,7 +11,7 @@ class LinkedIn:
             header["path"] = header["path"].format(search_parameter)
         return header
 
-    def create_page_df(titles, companies, locations, urls):
+    def create_page_df(self, titles, companies, locations, urls):
         if len(titles) == len(companies) == len(locations) == len(urls):
             df = pd.DataFrame(
                 {
@@ -46,6 +46,12 @@ class LinkedIn:
             ]
             df_list.append(self.create_page_df(titles, companies, locations, urls))
         df = pd.concat(df_list, ignore_index=True).drop_duplicates(
-            subset=["Job_Title", "Company"], keep="first"
+            subset=["Job_Title", "Company", "Location"], keep="first"
         )
         return df
+
+'''if __name__ == "__main__":
+    df = LinkedIn().scrape(["Remote%20Data%20Engineer","Remote%20AWS%20Engineer","Remote%20Big%20Data%20Engineer","Remote%20Hadoop%20Engineer","Remote%20Cloud%20Engineer", "Remote%20Azure%20Engineer", "Remote%20GCP%20Engineer", "Remote%20Pyspark%20Engineer"],
+            "https://www.linkedin.com/voyager/api/voyagerJobsDashJobCards?decorationId=com.linkedin.voyager.dash.deco.jobs.search.JobSearchCardsCollection-170&count=25&q=jobSearch&query=(origin:JOB_SEARCH_PAGE_OTHER_ENTRY,keywords:{0},locationUnion:(geoId:101174742),spellCorrectionEnabled:true)&start=25"
+    )
+    print(df.shape[0])'''

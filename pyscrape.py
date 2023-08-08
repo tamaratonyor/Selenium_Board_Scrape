@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import json
 from boards.indeed import Indeed
 from boards.simplyhired import SimplyHired
+from boards.linkedin import LinkedIn
 import logging
 
 
@@ -58,6 +59,10 @@ if __name__ == "__main__":
         elif "simplyhired" in url:
             df_list.append(
                 SimplyHired().scrape(search_parameters=search_parameters, url=url)
+            )
+        elif "linkedin" in url:
+            df_list.append(
+                LinkedIn().scrape(search_parameters=search_parameters, url=url)
             )
         else:
             logging.error(
