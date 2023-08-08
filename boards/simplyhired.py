@@ -3,6 +3,7 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 from datetime import date
 
+
 class SimplyHired:
     def scrape(self, search_parameters, url):
         df_list = []
@@ -17,9 +18,15 @@ class SimplyHired:
         return df
 
     def create_page_df(self, driver):
-        title_elements = driver.find_elements(By.XPATH, "//h3[@class = 'jobposting-title']")
-        company_elements = driver.find_elements(By.XPATH, "//span[@class = 'JobPosting-labelWithIcon jobposting-company']")
-        location_elements = driver.find_elements(By.XPATH, "//span[@class = 'jobposting-location']")
+        title_elements = driver.find_elements(
+            By.XPATH, "//h3[@class = 'jobposting-title']"
+        )
+        company_elements = driver.find_elements(
+            By.XPATH, "//span[@class = 'JobPosting-labelWithIcon jobposting-company']"
+        )
+        location_elements = driver.find_elements(
+            By.XPATH, "//span[@class = 'jobposting-location']"
+        )
         id_elements = driver.find_elements(By.XPATH, "//h3/a")
         urls = []
         titles = []
@@ -27,8 +34,7 @@ class SimplyHired:
         locations = []
         for element in id_elements:
             urls.append(
-                "https://www.simplyhired.ca"
-                + element.get_attribute("data-mdref")
+                "https://www.simplyhired.ca" + element.get_attribute("data-mdref")
             )
         for element in title_elements:
             titles.append(element.text)

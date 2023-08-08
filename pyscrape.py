@@ -67,5 +67,8 @@ if __name__ == "__main__":
     historical_df = read_table(database_connection)
     deduped_df = dedup([historical_df, current_df])
     deduped_df.to_sql(
-        con=database_connection, name="JobPostings_DataEngineer", if_exists="replace", index=False
+        con=database_connection,
+        name="JobPostings_DataEngineer",
+        if_exists="replace",
+        index=False,
     )
