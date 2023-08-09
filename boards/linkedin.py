@@ -29,7 +29,7 @@ class LinkedIn:
         for parameter in search_parameters:
             header = self.read_config(parameter)
             response = requests.get(url, headers=header)
-            data = response.json()["included"]
+            data = json.loads(response.text)["included"]
             postings = []
             for job in data:
                 if job.get("preDashNormalizedJobPostingUrn") is not None:
@@ -49,9 +49,3 @@ class LinkedIn:
             subset=["Job_Title", "Company", "Location"], keep="first"
         )
         return df
-
-'''if __name__ == "__main__":
-    df = LinkedIn().scrape(["Remote%20Data%20Engineer","Remote%20AWS%20Engineer","Remote%20Big%20Data%20Engineer","Remote%20Hadoop%20Engineer","Remote%20Cloud%20Engineer", "Remote%20Azure%20Engineer", "Remote%20GCP%20Engineer", "Remote%20Pyspark%20Engineer"],
-            "https://www.linkedin.com/voyager/api/voyagerJobsDashJobCards?decorationId=com.linkedin.voyager.dash.deco.jobs.search.JobSearchCardsCollection-170&count=25&q=jobSearch&query=(origin:JOB_SEARCH_PAGE_OTHER_ENTRY,keywords:{0},locationUnion:(geoId:101174742),spellCorrectionEnabled:true)&start=25"
-    )
-    print(df.shape[0])'''
