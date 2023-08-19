@@ -2,7 +2,10 @@ from selenium import webdriver
 import pandas as pd
 from selenium.webdriver.common.by import By
 from datetime import date
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
+import time
 
 class Indeed:
     def scrape(self, search_parameters, url):
@@ -10,11 +13,23 @@ class Indeed:
         for parameter in search_parameters:
             driver = webdriver.Chrome()
             driver.get(url.format(parameter))
-            df_list.append(self.create_page_df(driver))
-            # TODO Add next page functionality
+            while True:                
+                try:
+                    df_list.append(self.create_page_df(driver))
+                    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "a[data-testid=pagination-page-next]"))).click()
+                    print("Navigated to Next Page")
+                    try:
+                        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "button[aria-label=close]"))).click()
+                    except (TimeoutException):
+                        print("No Pop Up")
+                except (TimeoutException):
+                    print("Last page reached")
+                    break
         df = pd.concat(df_list, ignore_index=True).drop_duplicates(
             subset=["Job_Title", "Company"], keep="first"
         )
+        driver.quit()
         return df
 
     def create_page_df(self, driver):
