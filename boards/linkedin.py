@@ -1,17 +1,59 @@
-import requests
-from datetime import date
+from selenium import webdriver
 import pandas as pd
-import json
+from selenium.webdriver.common.by import By
+from datetime import date
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import InvalidSelectorException, TimeoutException, NoSuchElementException
+import time
 
 
 class LinkedIn:
-    def read_config(self, search_parameter):
-        with open("./boards/headers/linkedin_header.json", "r") as f:
-            header = json.load(f)
-            header["path"] = header["path"].format(search_parameter)
-        return header
+    def scrape(self, search_parameters, url):
+        df_list = []
+        for parameter in search_parameters:
+            driver = webdriver.Chrome()
+            driver.get(url.format(parameter))
+            while True:
+                df_list.append(self.create_page_df(driver))
+                driver.execute_script(
+                    "window.scrollTo(0, document.body.scrollHeight);"
+                )
+                print("Scrolled further Down")
+                try:
+                    WebDriverWait(driver, 10).until(
+                        EC.visibility_of_element_located(
+                            (By.CSS_SELECTOR, "button[data-tracking-control-name=infinite-scroller_show-more]")
+                        )
+                    ).click()
+                except (TimeoutException):
+                    print("Still Scrolling")
+                else:
+                    break
+        df = pd.concat(df_list, ignore_index=True).drop_duplicates(
+            subset=["Job_Title", "Company"], keep="first"
+        )
+        driver.quit()
+        return df
 
-    def create_page_df(self, titles, companies, locations, urls):
+
+    def create_page_df(self, driver):
+        title_elements = driver.find_elements(By.CSS_SELECTOR, "a[data-tracking-control-name=public_jobs_jserp-result_search-card]")
+        company_elements = driver.find_elements(By.CSS_SELECTOR, "h4.base-search-card__subtitle")
+        location_elements = driver.find_elements(By.CSS_SELECTOR, "span.job-search-card__location")
+        urls = []
+        titles = []
+        companies = []
+        locations = []
+        for element in title_elements:
+            urls.append(element.get_attribute("href"))
+        for element in title_elements:
+            titles.append(element.text)
+        for element in company_elements:
+            companies.append(element.text)
+        for element in location_elements:
+            locations.append(element.text)
+        
         if len(titles) == len(companies) == len(locations) == len(urls):
             df = pd.DataFrame(
                 {
@@ -22,30 +64,4 @@ class LinkedIn:
                     "Date_Pulled": date.today(),
                 }
             )
-        return df
-
-    def scrape(self, search_parameters, url):
-        df_list = []
-        for parameter in search_parameters:
-            header = self.read_config(parameter)
-            response = requests.get(url, headers=header)
-            data = json.loads(response.text)["included"]
-            postings = []
-            for job in data:
-                if job.get("preDashNormalizedJobPostingUrn") is not None:
-                    postings.append(job)
-            titles = [posting["jobPostingTitle"] for posting in postings]
-            companies = [posting["primaryDescription"]["text"] for posting in postings]
-            locations = [
-                posting["secondaryDescription"]["text"] for posting in postings
-            ]
-            urls = [
-                "https://www.linkedin.com/jobs/view/"
-                + posting["*jobPosting"].replace("urn:li:fsd_jobPosting:", "")
-                for posting in postings
-            ]
-            df_list.append(self.create_page_df(titles, companies, locations, urls))
-        df = pd.concat(df_list, ignore_index=True).drop_duplicates(
-            subset=["Job_Title", "Company", "Location"], keep="first"
-        )
         return df
