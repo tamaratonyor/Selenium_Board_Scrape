@@ -9,10 +9,9 @@ import time
 
 
 class SimplyHired:
-    def scrape(self, search_parameters, url):
+    def scrape(self, driver, search_parameters, url):
         df_list = []
         for parameter in search_parameters:
-            driver = webdriver.Chrome()
             driver.get(url.format(parameter))
             while True:
                 df_list.append(self.create_page_df(driver))

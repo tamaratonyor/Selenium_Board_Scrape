@@ -1,4 +1,3 @@
-from selenium import webdriver
 import pandas as pd
 from selenium.webdriver.common.by import By
 from datetime import date
@@ -8,10 +7,9 @@ from selenium.common.exceptions import TimeoutException
 
 
 class Indeed:
-    def scrape(self, search_parameters, url):
+    def scrape(self, driver, search_parameters, url):
         df_list = []
         for parameter in search_parameters:
-            driver = webdriver.Chrome()
             driver.get(url.format(parameter))
             while True:
                 try:

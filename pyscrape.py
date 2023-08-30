@@ -1,12 +1,11 @@
 import pandas as pd
 import sqlalchemy
-import re
-from datetime import datetime, timedelta
 import json
 from boards.indeed import Indeed
 from boards.simplyhired import SimplyHired
 from boards.linkedin import LinkedIn
 import logging
+from selenium import webdriver
 
 
 def get_connection(
@@ -51,18 +50,32 @@ if __name__ == "__main__":
         connection["IP"],
     )
     df_list = []
+    options = webdriver.ChromeOptions()
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    driver = webdriver.Chrome(options=options)
+    driver.execute_script(
+        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+    )
     for url in web_urls:
         if "indeed" in url:
             df_list.append(
-                Indeed().scrape(search_parameters=search_parameters, url=url)
+                Indeed().scrape(
+                    driver=driver, search_parameters=search_parameters, url=url
+                )
             )
         elif "simplyhired" in url:
             df_list.append(
-                SimplyHired().scrape(search_parameters=search_parameters, url=url)
+                SimplyHired().scrape(
+                    driver=driver, search_parameters=search_parameters, url=url
+                )
             )
         elif "linkedin" in url:
             df_list.append(
-                LinkedIn().scrape(search_parameters=search_parameters, url=url)
+                LinkedIn().scrape(
+                    driver=driver, search_parameters=search_parameters, url=url
+                )
             )
         else:
             logging.error(
