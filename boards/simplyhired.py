@@ -5,12 +5,19 @@ from datetime import date
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-import time
 
 
 class SimplyHired:
-    def scrape(self, driver, search_parameters, url):
+    def scrape(self, search_parameters, url):
         df_list = []
+        options = webdriver.ChromeOptions()
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option("useAutomationExtension", False)
+        driver = webdriver.Chrome(options=options)
+        driver.execute_script(
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        )
         for parameter in search_parameters:
             driver.get(url.format(parameter))
             while True:
